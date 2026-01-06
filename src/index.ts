@@ -20,6 +20,8 @@ import {
   DeleteProjectResponseBody,
   DeleteSecretsRequestBody,
   DeleteSecretsResponseData,
+  DeployFunctionRequestBody,
+  DeployFunctionResponseData,
   GetBranchDetailsResponseData,
   GetCustomHostnameResponseData,
   GetFunctionBodyResponseData,
@@ -287,6 +289,33 @@ export class SupabaseManagementAPI {
   ): Promise<CreateFunctionResponseData> {
     const { data, response } = await this.client.post(
       "/v1/projects/{ref}/functions",
+      {
+        params: {
+          path: {
+            ref,
+          },
+        },
+        body,
+      }
+    );
+
+    if (response.status !== 201) {
+      throw await this.#createResponseError(response, "create function");
+    }
+
+    return data;
+  }
+
+  /**
+   * Deploy function
+   * @description Deploys a function and adds it to the specified project.
+   */
+  async deployFunction(
+    ref: string,
+    body: DeployFunctionRequestBody
+  ): Promise<DeployFunctionResponseData> {
+    const { data, response } = await this.client.post(
+      "/v1/projects/{ref}/functions/deploy",
       {
         params: {
           path: {
@@ -751,7 +780,10 @@ export class SupabaseManagementAPI {
       }
     );
 
-    if (response.status !== 201) {
+    // I have no idea why it started returning 200, but
+    // it suddenly changed from returning 201 to returning 200.
+    // https://github.com/dyad-sh/dyad/issues/1761
+    if (response.status !== 201 && response.status !== 200) {
       throw await this.#createResponseError(response, "run query");
     }
 
@@ -1026,7 +1058,7 @@ export class SupabaseManagementAPI {
   }
 
   /** Upgrades the project's Postgres version */
-  async upgradeProject(ref: string, targetVersion: number) {
+  async upgradeProject(ref: string, targetVersion: string) {
     const { response } = await this.client.post("/v1/projects/{ref}/upgrade", {
       params: {
         path: {
