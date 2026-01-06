@@ -87,7 +87,7 @@ export function isSupabaseError(
 }
 
 export class SupabaseManagementAPI {
-  constructor(private readonly options: SupabaseManagementAPIOptions) {}
+  constructor(private readonly options: SupabaseManagementAPIOptions) { }
 
   /**
    * List all organizations
@@ -780,9 +780,6 @@ export class SupabaseManagementAPI {
       }
     );
 
-    // I have no idea why it started returning 200, but
-    // it suddenly changed from returning 201 to returning 200.
-    // https://github.com/dyad-sh/dyad/issues/1761
     if (response.status !== 201 && response.status !== 200) {
       throw await this.#createResponseError(response, "run query");
     }
@@ -1443,8 +1440,7 @@ export class SupabaseManagementAPI {
     const errorBody = await safeParseErrorResponseBody(response);
 
     return new SupabaseManagementAPIError(
-      `Failed to ${action}: ${response.statusText} (${response.status})${
-        errorBody ? `: ${errorBody.message}` : ""
+      `Failed to ${action}: ${response.statusText} (${response.status})${errorBody ? `: ${errorBody.message}` : ""
       }`,
       response
     );
